@@ -7,6 +7,7 @@ import json
 from boto import ec2, vpc, opsworks
 from boto.exception import EC2ResponseError
 
+from utils.utils import Logger
 from etc import settings
 from exceptions import (
     ExpectedAWSKeys,
@@ -18,6 +19,12 @@ from exceptions import (
 class OpsWorkSetup(object):
 
     def __init__(self, access_key=None, secret_key=None):
+        self.logging = Logger(
+            self.__class__.__name__
+        ).get_logger()
+        self.logging.debug(
+            "Initiate class for opswork environments: %s" % (self.__class__.__name__)
+        )
         if not settings.access_key or not settings.secret_key:
             self.access_key = access_key
             self.secret_key = secret_key
@@ -37,6 +44,9 @@ class OpsWorkSetup(object):
             aws_secret_access_key=self.secret_key,
             region_name='us-east-1'
         )
+        self.logging.debug(
+            "The connection with opsworks was been succesfully"
+        )
         return _conn
 
     @property
@@ -46,6 +56,9 @@ class OpsWorkSetup(object):
             aws_secret_access_key=self.secret_key,
             region_name=settings.region
         )
+        self.logging.debug(
+            "The connection with ec2 was been succesfully"
+        )
         return _security_groups
     
     @property
@@ -54,6 +67,9 @@ class OpsWorkSetup(object):
             aws_access_key_id=self.access_key,
             aws_secret_access_key=self.secret_key,
             region_name=settings.region
+        )
+        self.logging.debug(
+            "The connection with vpc was been succesfully"
         )
         return _describe_subnets
     
@@ -80,10 +96,30 @@ class OpsWorkSetup(object):
             default_os=settings.default_os,
             configuration_manager=settings.configuration_manager
         )
+        self.logging.debug(
+            "The stack: {!r} has been created with successfull".format(
+                stack_name
+            )
+        )
         return self.stack
 
     def create_security_group(self, network_policies=[]):
-        """ get security groups and modeling template for security groups"""
+        """ get security groups and modeling template for security groups:
+        :network_policies (list)
+            e.g: [{
+                'protocol': 'http',
+                'from_port': '80',
+                'to_port': '80',
+                'cidr_ip': '172.0.0.1/16'
+            }, {
+                'protocol': 'tcp',
+                'from_port': '9201',
+                'to_port': '9201',
+                'cidr_ip': '172.16.0.1/16'
+            }]
+
+        ** Observation **
+            Don't accepet rules with 0.0.0.0/0"""
         security_groups = self.security_groups.get_all_security_groups()
         for sg_attributes in security_groups:
             if u"AWS-OpsWorks-Default-Server" == sg_attributes.name:
@@ -95,8 +131,19 @@ class OpsWorkSetup(object):
                             new_rule['to_port'],
                             new_rule['cidr_ip']
                         )
+                        self.logging.info(
+                            "The new rule: {!r}, {!r}, {!r}, {!r} has been created on securit group: {!r}".format(
+                                new_rule['protocol'],
+                                new_rule['from_port'],
+                                new_rule['to_port'],
+                                new_rule['cidr_ip'],
+                                sg_attributes.name
+                            )
+                        )
                     except EC2ResponseError:
-                        print "Specified Rule already exists...skipped"
+                        self.loggin.info(
+                            "Specified Rule already exists...skipped"
+                        )
                         pass
 
                 # If put rule with "0.0.0.0/0" will be deleted.
@@ -110,8 +157,32 @@ class OpsWorkSetup(object):
                                 rule.to_port,
                                 grant.cidr_ip
                             )
+                            self.logging.info(
+                                "The rule: {!r}, {!r}, {!r}, {!r} has been deleted on security group: {!r}.".format(
+                                    rule.ip_protocol,
+                                    rule.from_port,
+                                    rule.to_port,
+                                    rule.cidr_ip,
+                                    sg_attributes.name
+                                )
+                            )
 
     def vpc_data_network(self, protocol='tcp', cidr_ips=[]):
+        """ This method is just for get and management vpc informcations:
+        :protocol (string):
+        :cidr_ips (list): 
+            e.g: [{
+                'protocol': 'http',
+                'from_port': '80',
+                'to_port': '80',
+                'cidr_ip': '172.0.0.1/16'
+            }, {
+                'protocol': 'tcp',
+                'from_port': '9200',
+                'to_port': '9200',
+                'cidr_ip': '172.1.0.1/16'
+            }]"""
+                
         if not cidr_ips:
             # Get default subnets on defauilt VPC (my case)
             subnets = self.describe_subnets.get_all_subnets()
@@ -144,9 +215,16 @@ class OpsWorkSetup(object):
                 })
         if not network_policies:
             raise ExpectedSubnetsAndVPC("Well, in this case, it's necessary to create one VPC and two subnets for this region")
+        self.logging.debug("Created network policies, and adjusted with parameters: {}".format(
+            network_policies
+            )
+        )
         self.create_security_group(network_policies=network_policies)
 
     def create_layer(self, new_stack=False, stack_id=None):
+        """ The method is just for create layer:
+        :new_stack (booblean): 
+        :stack_id (string):"""
         layer_name = 'ElasticSearchLayer-{}'.format(str(uuid.uuid4())[:8])
         if new_stack and stack_id is None:
             new_stack_id = self.create_stack()['StackId']
@@ -165,9 +243,23 @@ class OpsWorkSetup(object):
             auto_assign_elastic_ips=True,
             custom_recipes=settings.recipes
         )
+        self.logging.debug(
+            "The layer: {!r} has been created with successfull".format(
+                layer_name
+            )
+        )
         return self.layer_created
 
     def create_instances(self, number_instances=3, subnets_list=[], new_layer=True, new_stack=True, layer_id=[], **kwargs):
+        """The method is just for create instances:
+        :number_instances (int): Number of the instances you want create
+        :subnets_list (list): list with the subnets for input your instances, example:
+            [ 172.0.0.1/16, 172.1.0.1/16 ]
+        :new_layer (boolean): If you want create a new layer before or input in specific layer, expected LayerId
+        :new_stack (boolean): if you want create a new stack before or input in specific stack, expected StackId
+        :layer_id (list): If new_layer is False, i need a list with layer ids, example: [ 'foor', 'bar' ]
+        :**kwargs (dict): dict with another increments for boto.opsworks method
+        """
         if new_layer and not layer_id:
             print "if.."
             new_layer_id = [self.create_layer(new_stack=new_stack)['LayerId']]
@@ -194,10 +286,23 @@ class OpsWorkSetup(object):
                 subnet_id=new_subnets_list,
                 **kwargs
             )
-            print instance_created
+            self.logging.debug(
+                "The {!r} instance(s) has been created with successfull: stack_id: {!r}, layer_id: {!r}, instance_type: {!r}, subnets: {!r}".format(
+                    number_instances,
+                    self.stack['StackId'],
+                    new_layer_id,
+                    settings.instance_type,
+                    new_subnets_list
+                )
+            )
             self.conn.start_instance(instance_created['InstanceId'])
 
     def managament_instance(self, instance_id, action='stop'):
+        """ This class, is just for management instances (stop, start etc...)
+        :instance_id (string):
+        :action (string) - specific strings expected, are options:
+            'stop', 'start', 'delete'
+        """
         status = None
         if action == 'stop':
             status = self.conn.stop_instance(instance_id)
