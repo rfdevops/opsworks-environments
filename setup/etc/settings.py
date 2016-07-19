@@ -9,6 +9,16 @@ custom_json_cheff = """{
 		"accept_license_agreement": "true",
 		"install_flavor": "oracle"
 	},
+	"opsworks": {
+		"data_bags": {
+			"plugins": {
+				"cloud-aws": {
+					"access_key": "",
+					"secret_key": ""
+				}
+			}
+		}
+	},
 	"elasticsearch": {
 		"nginx": {
 			"users": [{
