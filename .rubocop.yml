@@ -1,0 +1,12 @@
+Lint/RescueException:
+  Exclude:
+    - 'Rakefile'
+
+Style/AccessorMethodName:
+  Exclude:
+    - 'libraries/helpers.rb'
+
+# Configuration parameters: MinBodyLength.
+Style/GuardClause:
+  Exclude:
+    - 'Rakefile'
