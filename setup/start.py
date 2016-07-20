@@ -35,7 +35,7 @@ def call(args, parse):
                         arg
                     )
                 )
-        print args.number_instances
+
         opsworks.create_instances(
             number_instances=args.number_instances,
             cidr_ips=args.cidr_ips,
@@ -79,6 +79,7 @@ def call(args, parse):
 
     if args.which == "start_instance":
         opsworks.managament_instance(instance_id=args.instance_id, action="start")
+
 
 if __name__ == '__main__':
 
