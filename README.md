@@ -1,7 +1,7 @@
 # opsworks-environments
 Simple task for run opsworks environment with elasticsearch and kopf plugin. (BUILDING)
 
-* first of all, you need to create a user, in AWS with AdministratorAccess, for build a environment,
+* First of all, you need to create a user, in AWS with AdministratorAccess, for build a environment,
 this rule its necessary for create all stacks, layers, security groups, so you need a power access in your environment.
 
 For create a IAM role, go to console, choose your region, then go to Services > IAM.
