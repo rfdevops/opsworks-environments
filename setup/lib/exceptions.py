@@ -13,3 +13,6 @@ class ExpectedSubnetsAndVPC(Exception):
 
 class ParameterProblems(Exception):
 	pass
+
+class UnknowCIDRRange(Exception):
+	pass

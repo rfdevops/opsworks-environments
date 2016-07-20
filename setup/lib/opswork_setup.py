@@ -123,7 +123,8 @@ class OpsWorkSetup(object):
         security_groups = self.security_groups.get_all_security_groups()
         for sg_attributes in security_groups:
             if u"AWS-OpsWorks-Default-Server" == sg_attributes.name:
-                for new_rulee in network_policies:
+                for new_rule in network_policies:
+                    print new_rule
                     try:
                         sg_attributes.authorize(
                             new_rule['protocol'],
@@ -132,7 +133,7 @@ class OpsWorkSetup(object):
                             new_rule['cidr_ip']
                         )
                         self.logging.info(
-                            "The new rule: {!r}, {!r}, {!r}, {!r} has been created on securit group: {!r}".format(
+                            "The new rule: {!r}, {!r}, {!r}, {!r} has been created on security group: {!r}".format(
                                 new_rule['protocol'],
                                 new_rule['from_port'],
                                 new_rule['to_port'],
@@ -141,7 +142,7 @@ class OpsWorkSetup(object):
                             )
                         )
                     except EC2ResponseError:
-                        self.loggin.info(
+                        self.logging.info(
                             "Specified Rule already exists...skipped"
                         )
                         pass
@@ -162,7 +163,7 @@ class OpsWorkSetup(object):
                                     rule.ip_protocol,
                                     rule.from_port,
                                     rule.to_port,
-                                    rule.cidr_ip,
+                                    grant.cidr_ip,
                                     sg_attributes.name
                                 )
                             )
@@ -182,40 +183,39 @@ class OpsWorkSetup(object):
                 'to_port': '9200',
                 'cidr_ip': '172.1.0.1/16'
             }]"""
-                
+        network_policies = []
         if not cidr_ips:
             # Get default subnets on defauilt VPC (my case)
             subnets = self.describe_subnets.get_all_subnets()
-            network_policies = []
             for subnet in subnets:
                 cidr_ips.append(subnet.cidr_block)
             network_policies = [{
                 'protocol': 'tcp',
                 'from_port': 9300,
                 'to_port': 9300,
-                'cidr_ip': cidr_ips[0]
+                'cidr_ip': [cidr_ips[0], cidr_ips[1]]
             }, {
                 'protocol': 'tcp',
                 'from_port': 9201,
                 'to_port': 9201,
-                'cidr_ip': cidr_ips[1]
+                'cidr_ip': [cidr_ips[0], cidr_ips[1]]
             }, {
                 'protocol': 'tcp',
                 'from_port': 80,
                 'to_port': 80,
-                'cidr_ip': cidr_ips[1]
+                'cidr_ip': [cidr_ips[0], cidr_ips[1]]
             }]
         else:
             for cidr_ip in cidr_ips:
                 network_policies.append({
-                    cidr_ip['protocol'],
-                    cidr_ip['from_port'],
-                    cidr_ip['to_port'],
-                    cidr_ip['cidr_ip']
+                    'protocol': cidr_ip['protocol'],
+                    'from_port': cidr_ip['from_port'],
+                    'to_port': cidr_ip['to_port'],
+                    'cidr_ip': cidr_ip['cidr_ip']
                 })
         if not network_policies:
             raise ExpectedSubnetsAndVPC("Well, in this case, it's necessary to create one VPC and two subnets for this region")
-        self.logging.debug("Created network policies, and adjusted with parameters: {}".format(
+        self.logging.debug("will be created network policies and adjusted with parameters: {}".format(
             network_policies
             )
         )
@@ -251,7 +251,7 @@ class OpsWorkSetup(object):
         self.vpc_data_network()
         return self.layer_created
 
-    def create_instances(self, number_instances=3, subnets_list=[], new_layer=True, new_stack=True, layer_id=[], **kwargs):
+    def create_instances(self, number_instances=3, subnets_list=[], new_layer=True, new_stack=True, layer_id=[], cidr_ips=[], **kwargs):
         """The method is just for create instances:
         :number_instances (int): Number of the instances you want create
         :subnets_list (list): list with the subnets for input your instances, example:
@@ -259,10 +259,10 @@ class OpsWorkSetup(object):
         :new_layer (boolean): If you want create a new layer before or input in specific layer, expected LayerId
         :new_stack (boolean): if you want create a new stack before or input in specific stack, expected StackId
         :layer_id (list): If new_layer is False, i need a list with layer ids, example: [ 'foor', 'bar' ]
+        :cidr_ips (list): Set the ips list with arbitrary cidr_ips
         :**kwargs (dict): dict with another increments for boto.opsworks method
         """
         if new_layer and not layer_id:
-            print "if.."
             new_layer_id = [self.create_layer(new_stack=new_stack)['LayerId']]
         if layer_id:
             new_layer_id = layer_id
@@ -297,6 +297,29 @@ class OpsWorkSetup(object):
                 )
             )
             self.conn.start_instance(instance_created['InstanceId'])
+
+        if cidr_ips:
+            rules=[]
+            for cidr_ip in cidr_ips:
+                rules.append({
+                    'protocol': 'tcp',
+                    'from_port': 80,
+                    'to_port': 80,
+                    'cidr_ip': cidr_ip
+                })
+                rules.append({
+                    'protocol': 'tcp',
+                    'from_port': 9201,
+                    'to_port': 9201,
+                    'cidr_ip': cidr_ip
+                })
+                rules.append({
+                    'protocol': 'tcp',
+                    'from_port': 9300,
+                    'to_port': 9300,
+                    'cidr_ip': cidr_ip
+                })
+            self.vpc_data_network(cidr_ips=rules)
 
     def managament_instance(self, instance_id, action='stop'):
         """ This class, is just for management instances (stop, start etc...)
