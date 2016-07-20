@@ -51,14 +51,6 @@ def call(args, parse):
         if not args.new_stack:
             logging.debug("Missing parameters ['--new-stack'], by default is False")
 
-        
-        print "ni {}".format(args.number_instances)
-        print "ns: {}".format(args.new_stack)
-        print "nl: {}".format(args.new_layer)
-        print "si: {}".format(args.stack_id)
-        print "li: {}".format(args.layer_id)
-
-
         opsworks.create_instances(
             number_instances=args.number_instances,
             new_layer=args.new_layer,
@@ -66,6 +58,18 @@ def call(args, parse):
             layer_id=args.layer_id,
             stack_id=args.stack_id,
         )
+
+    if args.which == "create_layer":
+        if not args.new_stack:
+            logging.debug("Missing parameters ['--new-layer'], by default is False")
+
+        opsworks.create_layer(
+            new_stack=args.new_stack,
+            stack_id=args.stack_id
+        )
+
+    if args.which == "create_stack":
+        opsworks.create_stack()
 
     if args.which == "delete_instance":
         opsworks.managament_instance(instance_id=args.instance_id, action="delete")
@@ -145,7 +149,6 @@ if __name__ == '__main__':
         "-si",
         "--stack-id",
         type=str,
-        nargs="+",
         help=":str Stack id in string type"
     )
 
@@ -157,11 +160,34 @@ if __name__ == '__main__':
         help=":str Stack id in string type"
     )
 
-    create_parser = subparsers.add_parser(
+    #Create layer
+    create_layer_parser = subparsers.add_parser(
+        "create-layer",
+        help="Create a new Layer"
+    )
+    create_layer_parser.set_defaults(which='create_layer')
+
+    group_create_layer_with_stack = create_layer_parser.add_mutually_exclusive_group(required=True)
+    group_create_layer_with_stack.add_argument(
+        "-ns",
+        "--new-stack",
+        action="store_true",
+        help="Create a new stack before create layer, if not, will be necessary put --stack-id argument."
+    )
+
+    group_create_layer_with_stack.add_argument(
+        "-si",
+        "--stack-id",
+        type=str,
+        help=":str Stack id in string type"
+    )
+
+    #Create Stack
+    create_stack_parser = subparsers.add_parser(
         'create-stack',
         help='Create a new Stack'
     )
-    create_parser.set_defaults(which='create_stack')
+    create_stack_parser.set_defaults(which='create_stack')
 
 
     setup_environment = subparsers.add_parser(
