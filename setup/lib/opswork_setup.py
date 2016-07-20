@@ -248,6 +248,7 @@ class OpsWorkSetup(object):
                 layer_name
             )
         )
+        self.vpc_data_network()
         return self.layer_created
 
     def create_instances(self, number_instances=3, subnets_list=[], new_layer=True, new_stack=True, layer_id=[], **kwargs):
