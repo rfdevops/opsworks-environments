@@ -251,7 +251,7 @@ class OpsWorkSetup(object):
         self.vpc_data_network()
         return self.layer_created
 
-    def create_instances(self, number_instances=3, subnets_list=[], new_layer=True, new_stack=True, layer_id=[], cidr_ips=[], **kwargs):
+    def create_instances(self, number_instances=3, subnets_list=[], new_layer=True, new_stack=True, stack_id=None, layer_id=[], cidr_ips=[], **kwargs):
         """The method is just for create instances:
         :number_instances (int): Number of the instances you want create
         :subnets_list (list): list with the subnets for input your instances, example:
@@ -266,6 +266,11 @@ class OpsWorkSetup(object):
             new_layer_id = [self.create_layer(new_stack=new_stack)['LayerId']]
         if layer_id:
             new_layer_id = layer_id
+
+        if not new_stack:
+            self.stack = {
+                'StackId': stack_id
+            }
 
         if subnets_list:
             if len(subnets_list) != number_instances:

@@ -16,6 +16,14 @@ __copyright__ = "Copyright (C) 2015 Rondineli G. Araujo"
 __version__ = "0.0.1"
 
 
+logging = Logger(
+    "OpsWorks Setup"
+).get_logger()
+logging.debug(
+    "Lunch opsworks setup with elasticSearch Cluster"
+)
+
+
 def call(args, parse):
     opsworks = OpsWorkSetup()
     if args.which == 'setup_environment':
@@ -36,6 +44,37 @@ def call(args, parse):
 
         )
 
+    if args.which == "create_instances":
+        if not args.new_layer:
+            logging.debug("Missing parameters ['--new-layer'], by default is False")
+
+        if not args.new_stack:
+            logging.debug("Missing parameters ['--new-stack'], by default is False")
+
+        
+        print "ni {}".format(args.number_instances)
+        print "ns: {}".format(args.new_stack)
+        print "nl: {}".format(args.new_layer)
+        print "si: {}".format(args.stack_id)
+        print "li: {}".format(args.layer_id)
+
+
+        opsworks.create_instances(
+            number_instances=args.number_instances,
+            new_layer=args.new_layer,
+            new_stack=args.new_stack,
+            layer_id=args.layer_id,
+            stack_id=args.stack_id,
+        )
+
+    if args.which == "delete_instance":
+        opsworks.managament_instance(instance_id=args.instance_id, action="delete")
+
+    if args.which == "stop_instance":
+        opsworks.managament_instance(instance_id=args.instance_id, action="stop")
+
+    if args.which == "start_instance":
+        opsworks.managament_instance(instance_id=args.instance_id, action="start")
 
 if __name__ == '__main__':
 
@@ -45,27 +84,32 @@ if __name__ == '__main__':
 
     # Management Instances
     delete_instance_parser = subparsers.add_parser('delete-instances', help="Delete specific instances")
+    delete_instance_parser.set_defaults(which="delete_instance")
+
     stop_instance_parser = subparsers.add_parser('stop-instance', help="Stop specific instances")
+    stop_instance_parser.set_defaults(which="stop_instance")
+
     start_instance_parser = subparsers.add_parser('start-instance', help="Start specific instances")
+    start_instance_parser.set_defaults(which="start_instance")
 
     delete_instance_parser.add_argument(
         "-ii", 
         "--instance-id",
-        nargs="+",
+        type=str,
         required=True,
         help="Instance Id that will be deleted"
     )
     stop_instance_parser.add_argument(
         "-ii", 
         "--instance-id",
-        nargs="+",
+        type=str,
         required=True,
         help="Instance Id that will be stopped"
     )
     start_instance_parser.add_argument(
         "-ii", 
         "--instance-id",
-        nargs="+",
+        type=str,
         required=True,
         help="Instance Id that will be started"
     )
@@ -74,6 +118,8 @@ if __name__ == '__main__':
     # Create instances
     create_instances_parser = subparsers.add_parser('create-instances', help='Create instances')
     create_instances_parser.set_defaults(which='create_instances')
+    group_create_instances_stack = create_instances_parser.add_mutually_exclusive_group(required=True)
+    group_create_instances_layer = create_instances_parser.add_mutually_exclusive_group(required=True)
 
     create_instances_parser.add_argument(
         "-ni",
@@ -83,29 +129,31 @@ if __name__ == '__main__':
         help='Number of instances that will be created, by default will be create 3'
     )
 
-    create_instances_parser.add_argument(
+    group_create_instances_stack.add_argument(
         "-ns",
         "--new-stack",
         action="store_true",
         help="Create a new stack before create layer, if not, will be necessary put --stack-id argument."
     )
-    create_instances_parser.add_argument(
+    group_create_instances_layer.add_argument(
         "-nl",
         "--new-layer",
         action="store_true",
         help="Create a new layer before create instance, if not, will be necessary put --layer-id argument."
     )
-    create_instances_parser.add_argument(
+    group_create_instances_stack.add_argument(
         "-si",
         "--stack-id",
         type=str,
+        nargs="+",
         help=":str Stack id in string type"
     )
 
-    create_instances_parser.add_argument(
+    group_create_instances_layer.add_argument(
         "-ly",
         "--layer-id",
         type=str,
+        nargs="+",
         help=":str Stack id in string type"
     )
 
