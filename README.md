@@ -16,12 +16,7 @@ After it, click on close twice.
 
 in the next one, click about your user that was created, so go to `Permissions`, and click on `Attach policy` and choice `AdministratorAccess`.
 
-After did it, go to the `Roles` and create a new role called `aws-opsworks-ec2-role`, in the next one, choice `Aws Services Roles` and `Amazon EC2`, then not select anything, and save role.
-
-Repeat it with the role with `aws-opsworks-service-role`.
-
-After did it, you need to go on details of the `aws-opsworks-ec2-role`, go to `Inline Policies`, and select `Custom Policy`, the name, put `OpsWorksElasticsearchEC2Discovery`, and put below the json.
-
+After did it, go to the `Policies` and create a new policie called `OpsWorksElasticsearchEC2Discovery`, copy and paste the json below, and save.
 ```
 {
     "Version": "2012-10-17",
@@ -40,8 +35,38 @@ After did it, you need to go on details of the `aws-opsworks-ec2-role`, go to `I
     ]
 }
 ```
+Go to the roles, and `Create new rule`, call the `opsworks-elasticsearch-ec2-role`, click on Next and select `Amazon Ec2` and `AWS Service Roles`, so, looking for and add `OpsWorksElasticsearchEC2Discovery` as policy, then save it.
+
+Next One, Create another rule called `aws-opsworks-service-role`, in `AWS Service Roles`, choose `OpsWorks` then, don't select select any policies and save the policies. In the next one, open the rule details and select `Inline Policies` and select `Custom Policy`. Call it the `OWServicePolicy` and copy the json below:
+```
+{
+    "Statement": [
+        {
+            "Action": [
+                "ec2:*",
+                "iam:PassRole",
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:DescribeAlarms",
+                "elasticloadbalancing:*",
+                "rds:*"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+```
+
 Save this rule, so, go to IAM dashboard in `Roles`, get describle to `aws-opsworks-ec2-role`, and copy `Instance Profile ARN(s)` and past in `./etc/settings.py` on variable `default_instance_profile_arn`, go back and select `aws-opsworks-service-role` copy `Role ARN ` and paste in `./etc/settings.py` on variable `service_role_arn`.
 
+*** Atention ***
+```
+For run the environment is required create a ssh_key in your account, put your ssh-key name on ssh_key_name_default
+
+For more details, please, see:http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
+```
 
 So, right now, install the requirements of the project:
 
