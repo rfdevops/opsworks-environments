@@ -1,6 +1,24 @@
 # opsworks-environments
 Simple task for run opsworks environment with elasticsearch and kopf plugin. (BUILDING)
 
+# Introduction
+* Why Chef?
+```
+Chef is good tool, with good tricks for automation tasks. Chef, have good cookbooks and a good support. So, Because this, i decided use it. For this micro script, i have used a generic cookbooks (from public repository), and a just create a litle bit changes.
+```
+* Why OpsWorks?
+```
+Well, Opsworks at moment, is may better than anothers deployments and automations tools of the AWS. Opsworks, have a good integration with chef, and a good things for automate a small and medium environments on AWS (security groups, instances, VPC, ACLs and etc...(
+```
+* Why Python?
+```
+Python, at moment is my first language and for quickly scripts like it, sounds good build a simples tasks using boto library.
+```
+* Why Nginx?
+```
+Just, because i think, nginx is better than apache, and they was built for get a more requests per seconds possibles.
+```
+
 * First of all, you need to create a user, in AWS with AdministratorAccess, for build a environment,
 this rule its necessary for create all stacks, layers, security groups, so you need a power access in your environment.
 
@@ -10,18 +28,13 @@ click on Users, then click on Create New Users.
 
 On first one, put your user name, in this case, i put 'elasticsearch', so check if "Generate an access key for each user" is flagged, if so, click on create.
 in the next page, click on 'Show user security credentials', and get your `access_key` and your `secret_key`, and put on
-`"access_key": ""` and `"secret_key": ""` in `./etc/settings.py`.
+`"access_key": ""` and `"secret_key": ""` in `setup/etc/settings.py`.
 After it, click on close twice.
 
 
 in the next one, click about your user that was created, so go to `Permissions`, and click on `Attach policy` and choice `AdministratorAccess`.
 
-After did it, go to the `Roles` and create a new role called `aws-opsworks-ec2-role`, in the next one, choice `Aws Services Roles` and `Amazon EC2`, then not select anything, and save role.
-
-Repeat it with the role with `aws-opsworks-service-role`.
-
-After did it, you need to go on details of the `aws-opsworks-ec2-role`, go to `Inline Policies`, and select `Custom Policy`, the name, put `OpsWorksElasticsearchEC2Discovery`, and put below the json.
-
+After did it, go to the `Policies` and clicnk on `create a new policie`, then select `Create Your Own Policy`, so put `OpsWorksElasticsearchEC2Discovery` in the field name, copy the json below and paste in the json field and save.
 ```
 {
     "Version": "2012-10-17",
@@ -40,8 +53,38 @@ After did it, you need to go on details of the `aws-opsworks-ec2-role`, go to `I
     ]
 }
 ```
+Go to the roles, and `Create new rule`, call the `opsworks-elasticsearch-ec2-role`, click on Next and select `Amazon Ec2` in `AWS Service Roles`, so, looking for and add `OpsWorksElasticsearchEC2Discovery` as policy, then save it.
+
+Next One, Create another rule called `aws-opsworks-service-role`, in `AWS Service Roles`, choose `OpsWorks` then, don't select select any policies and save the policies. In the next one, open the rule details and select `Inline Policies` and select `Custom Policy`. Call it the `OWServicePolicy` and copy the json below:
+```
+{
+    "Statement": [
+        {
+            "Action": [
+                "ec2:*",
+                "iam:PassRole",
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:DescribeAlarms",
+                "elasticloadbalancing:*",
+                "rds:*"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+```
+
 Save this rule, so, go to IAM dashboard in `Roles`, get describle to `aws-opsworks-ec2-role`, and copy `Instance Profile ARN(s)` and past in `./etc/settings.py` on variable `default_instance_profile_arn`, go back and select `aws-opsworks-service-role` copy `Role ARN ` and paste in `./etc/settings.py` on variable `service_role_arn`.
 
+*** Atention ***
+```
+For run the environment is required create a ssh_key in your account, put your ssh-key name on ssh_key_name_default
+
+For more details, please, see:http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
+```
 
 So, right now, install the requirements of the project:
 
@@ -54,6 +97,14 @@ Lunch the cluster of the elasticsearchs with one master and how many cluster wou
 python start.py setup-environment --cidr-ips ipv4/mask ipv4/mask --number-instances 3
 ```
 
+And, Look in the console the new instances, then, access the kopf plugin and check if de cluster was built.
+```
+Default, basic atuth is: "username": "elasticsearch" and "password": "elasticsearch"
+```
+![Instances](docs/instances.jpg?raw=true "Instances")
+![Security Groups](docs/security_groups.jpg?raw=true "Security Groups")
+![Basic Auth with SSL](docs/basic_auth.jpg?raw=true "Basic Auth with ssl")
+![Cluster ElasticSearch](docs/clusters.jpg?raw=true "Clusters ElasticSearch")
 
 I bit more about the script:
 
