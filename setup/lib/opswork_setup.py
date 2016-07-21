@@ -204,6 +204,11 @@ class OpsWorkSetup(object):
                 'from_port': 80,
                 'to_port': 80,
                 'cidr_ip': [cidr_ips[0], cidr_ips[1]]
+            }, {
+                'protocol': 'tcp',
+                'from_port': 443,
+                'to_port': 443,
+                'cidr_ip': [cidr_ips[0], cidr_ips[1]]
             }]
         else:
             for cidr_ip in cidr_ips:
@@ -316,6 +321,12 @@ class OpsWorkSetup(object):
                     'protocol': 'tcp',
                     'from_port': 9201,
                     'to_port': 9201,
+                    'cidr_ip': cidr_ip
+                })
+                rules.append({
+                    'protocol': 'tcp',
+                    'from_port': 443,
+                    'to_port': 443,
                     'cidr_ip': cidr_ip
                 })
                 rules.append({
