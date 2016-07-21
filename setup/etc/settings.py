@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
+import json
 
-custom_json_cheff = """{
+access_key = ""
+secret_key = ""
+
+custom_json_cheff = {
 	"java": {
 		"jdk_version": "7",
 		"oracle": {
@@ -13,8 +17,8 @@ custom_json_cheff = """{
 		"data_bags": {
 			"plugins": {
 				"cloud-aws": {
-					"access_key": "",
-					"secret_key": ""
+					"access_key": access_key,
+					"secret_key": secret_key,
 				},
 				"nginx": {
 					"username": "elasticsearch",
@@ -47,7 +51,9 @@ custom_json_cheff = """{
 			"cluster.routing.allocation.awareness.attributes": "rack_id"
 		}
 	}
-}"""
+}
+
+custom_json_cheff = json.dumps(custom_json_cheff)
 
 recipes = {
 	"Setup": [
@@ -77,7 +83,7 @@ default_instance_profile_arn = ""
  
 vpc_id = None
 
-ssh_key_name_default = 'starfood'
+ssh_key_name_default = ''
 
 layer_name = u'ElasticSearchCluster'
 layer_short_name = u'clusteropswork'
@@ -87,8 +93,6 @@ available_zone = 'us-west-1a'
 
 instance_type = 't2.micro'
 
-access_key = ""
-secret_key = ""
 
 ebs_volum = [{
 	'MountPoint': '/mnt/elasticsearch-data',
