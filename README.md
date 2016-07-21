@@ -1,7 +1,7 @@
 # opsworks-environments
 Simple task for run opsworks environment with elasticsearch and kopf plugin. (BUILDING)
 
-* first of all, you need to create a user, in AWS with AdministratorAccess, for build a environment,
+* First of all, you need to create a user, in AWS with AdministratorAccess, for build a environment,
 this rule its necessary for create all stacks, layers, security groups, so you need a power access in your environment.
 
 For create a IAM role, go to console, choose your region, then go to Services > IAM.
@@ -9,18 +9,18 @@ For create a IAM role, go to console, choose your region, then go to Services > 
 click on Users, then click on Create New Users.
 
 On first one, put your user name, in this case, i put 'elasticsearch', so check if "Generate an access key for each user" is flagged, if so, click on create.
-in the next page, click on 'Show user security credentials', and get your access_key and your secret_key, and put on
-"access_key": "" and "secret_key": "" in `./etc/settings.py`.
+in the next page, click on 'Show user security credentials', and get your `access_key` and your `secret_key`, and put on
+`"access_key": ""` and `"secret_key": ""` in `./etc/settings.py`.
 After it, click on close twice.
 
 
 in the next one, click about your user that was created, so go to `Permissions`, and click on `Attach policy` and choice `AdministratorAccess`.
 
-After did it, go to the `Roles` and create a new role called ** aws-opsworks-ec2-role **, in the next one, choice ** Aws Services Roles ** and ** Amazon EC2 **, then not select anything, and save role.
+After did it, go to the `Roles` and create a new role called `aws-opsworks-ec2-role`, in the next one, choice `Aws Services Roles` and `Amazon EC2`, then not select anything, and save role.
 
-Repeat it with the role with ** aws-opsworks-service-role **.
+Repeat it with the role with `aws-opsworks-service-role`.
 
-After did it, you need to go on details of the ** aws-opsworks-ec2-role **, go to ** Inline Policies **, and select ** Custom Policy **, the name, put ** OpsWorksElasticsearchEC2Discovery  **, and put below the json.
+After did it, you need to go on details of the `aws-opsworks-ec2-role`, go to `Inline Policies`, and select `Custom Policy`, the name, put `OpsWorksElasticsearchEC2Discovery`, and put below the json.
 
 ```
 {
@@ -40,7 +40,7 @@ After did it, you need to go on details of the ** aws-opsworks-ec2-role **, go t
     ]
 }
 ```
-Save this rule, so, go to IAM dashboard in ** Roles **, get describle to ** aws-opsworks-ec2-role **, and copy **  Instance Profile ARN(s) ** and past in `./etc/settings.py` on variable ** default_instance_profile_arn **, go back and select ** aws-opsworks-service-role ** copy ** Role ARN ** and paste in `./etc/settings.py` on variable ** service_role_arn **.
+Save this rule, so, go to IAM dashboard in `Roles`, get describle to `aws-opsworks-ec2-role`, and copy `Instance Profile ARN(s)` and past in `./etc/settings.py` on variable `default_instance_profile_arn`, go back and select `aws-opsworks-service-role` copy `Role ARN ` and paste in `./etc/settings.py` on variable `service_role_arn`.
 
 
 So, right now, install the requirements of the project:
