@@ -15,19 +15,15 @@ custom_json_cheff = """{
 				"cloud-aws": {
 					"access_key": "",
 					"secret_key": ""
+				},
+				"nginx": {
+					"username": "elasticsearch",
+					"password": "elasticsearch"
 				}
 			}
 		}
 	},
 	"elasticsearch": {
-		"nginx": {
-			"users": [{
-				"username": "elasticsearch",
-				"password": "elasticsearch"
-			}],
-			"allow_cluster_api": "true",
-			"port": 80
-		},
 		"gateway": {
 			"expected_nodes": 3
 		},
