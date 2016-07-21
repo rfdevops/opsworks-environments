@@ -16,7 +16,7 @@ After it, click on close twice.
 
 in the next one, click about your user that was created, so go to `Permissions`, and click on `Attach policy` and choice `AdministratorAccess`.
 
-After did it, go to the `Policies` and create a new policie called `OpsWorksElasticsearchEC2Discovery`, copy and paste the json below, and save.
+After did it, go to the `Policies` and clicnk on `create a new policie`, then select `Create Your Own Policy`, so put `OpsWorksElasticsearchEC2Discovery` in the field name, copy the json below and paste in the json field and save.
 ```
 {
     "Version": "2012-10-17",
@@ -35,7 +35,7 @@ After did it, go to the `Policies` and create a new policie called `OpsWorksElas
     ]
 }
 ```
-Go to the roles, and `Create new rule`, call the `opsworks-elasticsearch-ec2-role`, click on Next and select `Amazon Ec2` and `AWS Service Roles`, so, looking for and add `OpsWorksElasticsearchEC2Discovery` as policy, then save it.
+Go to the roles, and `Create new rule`, call the `opsworks-elasticsearch-ec2-role`, click on Next and select `Amazon Ec2` in `AWS Service Roles`, so, looking for and add `OpsWorksElasticsearchEC2Discovery` as policy, then save it.
 
 Next One, Create another rule called `aws-opsworks-service-role`, in `AWS Service Roles`, choose `OpsWorks` then, don't select select any policies and save the policies. In the next one, open the rule details and select `Inline Policies` and select `Custom Policy`. Call it the `OWServicePolicy` and copy the json below:
 ```
