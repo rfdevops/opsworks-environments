@@ -1,6 +1,24 @@
 # opsworks-environments
 Simple task for run opsworks environment with elasticsearch and kopf plugin. (BUILDING)
 
+# Introduction
+* Why Chef?
+```
+Chef is good tool, with good tricks for automation tasks. Chef, have good cookbooks and a good support. So, Because this, i decided use it. For this micro script, i have used a generic cookbooks (from public repository), and a just create a litle bit changes.
+```
+* Why OpsWorks?
+```
+Well, Opsworks at moment, is may better than anothers deployments and automations tools of the AWS. Opsworks, have a good integration with chef, and a good things for automate a small and medium environments on AWS (security groups, instances, VPC, ACLs and etc...(
+```
+* Why Python?
+```
+Python, at moment is my first language and for quickly scripts like it, sounds good build a simples tasks using boto library.
+```
+* Why Nginx?
+```
+Just, because i think, nginx is better than apache, and they was built for get a more requests per seconds possibles.
+```
+
 * First of all, you need to create a user, in AWS with AdministratorAccess, for build a environment,
 this rule its necessary for create all stacks, layers, security groups, so you need a power access in your environment.
 
@@ -79,6 +97,14 @@ Lunch the cluster of the elasticsearchs with one master and how many cluster wou
 python start.py setup-environment --cidr-ips ipv4/mask ipv4/mask --number-instances 3
 ```
 
+And, Look in the console the new instances, then, access the kopf plugin and check if de cluster was built.
+```
+Default, basic atuth is: "username": "elasticsearch" and "password": "elasticsearch"
+```
+![Instances](docs/instances.jpg?raw=true "Instances")
+![Security Groups](docs/security_groups.jpg?raw=true "Security Groups")
+![Basic Auth with SSL](docs/basic_auth.jpg?raw=true "Basic Auth with ssl")
+![Cluster ElasticSearch](docs/clusters.jpg?raw=true "Clusters ElasticSearch")
 
 I bit more about the script:
 
