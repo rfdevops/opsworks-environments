@@ -10,7 +10,7 @@ click on Users, then click on Create New Users.
 
 On first one, put your user name, in this case, i put 'elasticsearch', so check if "Generate an access key for each user" is flagged, if so, click on create.
 in the next page, click on 'Show user security credentials', and get your `access_key` and your `secret_key`, and put on
-`"access_key": ""` and `"secret_key": ""` in `./etc/settings.py`.
+`"access_key": ""` and `"secret_key": ""` in `setup/etc/settings.py`.
 After it, click on close twice.
 
 
