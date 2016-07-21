@@ -101,10 +101,10 @@ And, Look in the console the new instances, then, access the kopf plugin and che
 ```
 Default, basic atuth is: "username": "elasticsearch" and "password": "elasticsearch"
 ```
-![Instances](docs/instances.jpg?raw=true "Instances")
-![Security Groups](docs/security_groups.jpg?raw=true "Security Groups")
-![Basic Auth with SSL](docs/basic_auth.jpg?raw=true "Basic Auth with ssl")
-![Cluster ElasticSearch](docs/clusters.jpg?raw=true "Clusters ElasticSearch")
+![Instances](setup/docs/instances.jpg?raw=true "Instances")
+![Security Groups](setup/docs/security_groups.jpg?raw=true "Security Groups")
+![Basic Auth with SSL](setup/docs/basic_auth.jpg?raw=true "Basic Auth with ssl")
+![Cluster ElasticSearch](setup/docs/clusters.jpg?raw=true "Clusters ElasticSearch")
 
 I bit more about the script:
 
