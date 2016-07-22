@@ -38,7 +38,7 @@ class Logger(object):
             component = self.__class__.__name__
 
         self.log_level = self.__class__.LOG_LEVELS.get(
-            settings.logger_level,
+            settings.LOGGER_LEVEL,
             logging.INFO
         )
         self.component = component

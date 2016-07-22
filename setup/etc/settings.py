@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
 
-access_key = ""
-secret_key = ""
+ACCESS_KEY = ""
+SECRET_KEY = ""
 
-custom_json_cheff = {
+CUSTOM_JSON_CHEF = {
 	"java": {
 		"jdk_version": "7",
 		"oracle": {
@@ -17,8 +17,8 @@ custom_json_cheff = {
 		"data_bags": {
 			"plugins": {
 				"cloud-aws": {
-					"access_key": access_key,
-					"secret_key": secret_key,
+					"access_key": ACCESS_KEY,
+					"secret_key": SECRET_KEY,
 				},
 				"nginx": {
 					"username": "elasticsearch",
@@ -53,9 +53,9 @@ custom_json_cheff = {
 	}
 }
 
-custom_json_cheff = json.dumps(custom_json_cheff)
+CUSTOM_JSON_CHEF = json.dumps(CUSTOM_JSON_CHEF)
 
-recipes = {
+RECIPES = {
 	"Setup": [
 		'yum',
 		'ark',
@@ -71,43 +71,43 @@ recipes = {
 }
 
 
-configuration_manager = {
+CONFIGURATION_MANAGER = {
 	"Name": "Chef",
 	"Version": "12"
 }
 
-default_os = "Amazon Linux 2016.03"
+DEFAULT_OS = "Amazon Linux 2016.03"
 
-service_role_arn = ""
-default_instance_profile_arn = ""
+SERVICE_ROLE_ARN = ""
+DEFAULT_INSTANCE_PROFILE_ARN = ""
  
-vpc_id = None
+VPC_ID = None
 
-ssh_key_name_default = ''
+SSH_KEY_NAME_DEFAULT = ''
 
-layer_name = u'ElasticSearchCluster'
-layer_short_name = u'clusteropswork'
+LAYER_NAME = u'ElasticSearchCluster'
+LAYER_SHORT_NAME = u'clusteropswork'
 
-region = 'us-west-1'
-available_zone = 'us-west-1a'
+REGION = 'us-west-1'
+AVAILABLE_ZONE = 'us-west-1a'
 
-instance_type = 't2.micro'
+INSTANCE_TYPE = 't2.micro'
 
 
-ebs_volum = [{
+EBS_VOLUM = [{
 	'MountPoint': '/mnt/elasticsearch-data',
 	'Size': 20,
 	'VolumnType': 'magnetic',
 	'NumberOfDisks': 1
 }]
 
-security_group = {
+SECURITY_GROUP = {
 	u'name': u'AWS-OpsWorks-Default-Server'
 }
 
-repository_url = 'https://github.com/Rondineli/cookbooks'
+REPOSITORY_URL = 'https://github.com/Rondineli/cookbooks'
 
-logger_level = "debug"
+LOGGER_LEVEL = "debug"
 
 try:
     from .local_settings import *

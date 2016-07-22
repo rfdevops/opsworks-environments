@@ -25,12 +25,12 @@ class OpsWorkSetup(object):
         self.logging.debug(
             "Initiate class for opswork environments: %s" % (self.__class__.__name__)
         )
-        if not settings.access_key or not settings.secret_key:
+        if not settings.ACCESS_KEY or not settings.SECRET_KEY:
             self.access_key = access_key
             self.secret_key = secret_key
         else:
-            self.access_key = settings.access_key
-            self.secret_key = settings.secret_key
+            self.access_key = settings.ACCESS_KEY
+            self.secret_key = settings.SECRET_KEY
 
         if self.access_key is None or self.secret_key is None:
             raise ExpectedAWSKeys(
@@ -54,7 +54,7 @@ class OpsWorkSetup(object):
         _security_groups = ec2.connect_to_region(
             aws_access_key_id=self.access_key,
             aws_secret_access_key=self.secret_key,
-            region_name=settings.region
+            region_name=settings.REGION
         )
         self.logging.debug(
             "The connection with ec2 was been succesfully"
@@ -66,7 +66,7 @@ class OpsWorkSetup(object):
         _describe_subnets = vpc.connect_to_region(
             aws_access_key_id=self.access_key,
             aws_secret_access_key=self.secret_key,
-            region_name=settings.region
+            region_name=settings.REGION
         )
         self.logging.debug(
             "The connection with vpc was been succesfully"
@@ -77,24 +77,24 @@ class OpsWorkSetup(object):
     def create_stack(self):
         """ create stack for modeling environment """
         stack_name = 'ElasticSearchStack-{}'.format(str(uuid.uuid4())[:8])
-        if (not settings.default_instance_profile_arn or settings.default_instance_profile_arn is None
-            or not settings.service_role_arn or settings.service_role_arn is None):
+        if (not settings.DEFAULT_INSTANCE_PROFILE_ARN or settings.DEFAULT_INSTANCE_PROFILE_ARN is None
+            or not settings.SERVICE_ROLE_ARN or settings.SERVICE_ROLE_ARN is None):
             raise ExpectedAWSRoles("Please, provide the correct services roles, see http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create.html and check README.md about the access required for this roles.")
 
         self.stack = self.conn.create_stack(
             name=stack_name,
-            region=settings.region,
-            default_availability_zone=settings.available_zone,
-            custom_json="{}".format(settings.custom_json_cheff),
+            region=settings.REGION,
+            default_availability_zone=settings.AVAILABLE_ZONE,
+            custom_json="{}".format(settings.CUSTOM_JSON_CHEF),
             use_custom_cookbooks=True,
             hostname_theme='Europe_Cities',
             use_opsworks_security_groups=True,
-            custom_cookbooks_source={"Type": "git", "Url": settings.repository_url},
-            default_instance_profile_arn=settings.default_instance_profile_arn,
-            service_role_arn=settings.service_role_arn,
-            default_ssh_key_name=settings.ssh_key_name_default,
-            default_os=settings.default_os,
-            configuration_manager=settings.configuration_manager
+            custom_cookbooks_source={"Type": "git", "Url": settings.REPOSITORY_URL},
+            default_instance_profile_arn=settings.DEFAULT_INSTANCE_PROFILE_ARN,
+            service_role_arn=settings.SERVICE_ROLE_ARN,
+            default_ssh_key_name=settings.SSH_KEY_NAME_DEFAULT,
+            default_os=settings.DEFAULT_OS,
+            configuration_manager=settings.CONFIGURATION_MANAGER
         )
         self.logging.debug(
             "The stack: {!r} has been created with successfull".format(
@@ -242,11 +242,11 @@ class OpsWorkSetup(object):
             stack_id=self.stack['StackId'],
             type='custom',
             name=layer_name,
-            volume_configurations=settings.ebs_volum,
+            volume_configurations=settings.EBS_VOLUM,
             shortname='elasticsearchlayer',
-            custom_instance_profile_arn=settings.default_instance_profile_arn,
+            custom_instance_profile_arn=settings.DEFAULT_INSTANCE_PROFILE_ARN,
             auto_assign_elastic_ips=True,
-            custom_recipes=settings.recipes
+            custom_recipes=settings.RECIPES
         )
         self.logging.debug(
             "The layer: {!r} has been created with successfull".format(
@@ -293,7 +293,7 @@ class OpsWorkSetup(object):
                 stack_id=self.stack['StackId'],
                 layer_ids=new_layer_id,
                 root_device_type='ebs',
-                instance_type=settings.instance_type,
+                instance_type=settings.INSTANCE_TYPE,
                 subnet_id=new_subnets_list,
                 **kwargs
             )
@@ -302,7 +302,7 @@ class OpsWorkSetup(object):
                     number_instances,
                     self.stack['StackId'],
                     new_layer_id,
-                    settings.instance_type,
+                    settings.INSTANCE_TYPE,
                     new_subnets_list
                 )
             )
