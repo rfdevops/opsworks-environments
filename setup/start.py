@@ -6,6 +6,8 @@ import argparse
 import types
 import re
 
+from etc import settings
+
 from utils.utils import Logger, APP_ROOT
 from lib.exceptions import UnknowCIDRRange
 from lib.opswork_setup import OpsWorkSetup
@@ -25,6 +27,20 @@ logging.debug(
 
 
 def call(args, parse):
+    if args.access_key:
+        settings.ACCESS_KEY = args.access_key
+
+    if args.secret_key:
+        settings.SECRET_KEY = args.secret_key
+
+    if args.service_role_arn:
+        settings.SERVICE_ROLE_ARN = args.service_role_arn
+
+    if args.instance_arn_role:
+        settings.DEFAULT_INSTANCE_PROFILE_ARN = args.instance_arn_role
+
+    print args
+
     opsworks = OpsWorkSetup()
     if args.which == 'setup_environment':
         pattern_ipv4 = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$")
@@ -83,6 +99,30 @@ def call(args, parse):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-ak",
+        "--access-key",
+        default=os.environ.get("ACCESS_KEY", None),
+        help="Access key | export ACCESS_KEY=''"
+    )
+    parser.add_argument(
+        "-sk",
+        "--secret-key",
+        default=os.environ.get("SECRET_KEY", None),
+        help="Secret key | export SECRET_KEY='' "
+    )
+    parser.add_argument(
+        "-sr",
+        "--service-role-arn",
+        default=os.environ.get("SERVICE_ROLE_ARN", None),
+        help="Service ARN Role | export SERVICE_ROLE_ARN=''"
+    )
+    parser.add_argument(
+        "-ir",
+        "--instance-arn-role",
+        default=os.environ.get("INSTANCE_ARN_PROFILE", None),
+        help="Instance Profile ARN | export INSTANCE_ARN_PROFILE=''"
+    )
 
     subparsers = parser.add_subparsers(help='commands')
 

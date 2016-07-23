@@ -7,72 +7,18 @@ import json
 from boto import ec2, vpc, opsworks
 from boto.exception import EC2ResponseError
 
-from utils.utils import Logger
+from connect import KeysAWS
 from etc import settings
 from exceptions import (
-    ExpectedAWSKeys,
     ExpectedAWSRoles,
     ExpectedSubnetsAndVPC,
     ParameterProblems
 )
 
-class OpsWorkSetup(object):
+class OpsWorkSetup(KeysAWS):
 
     def __init__(self, access_key=None, secret_key=None):
-        self.logging = Logger(
-            self.__class__.__name__
-        ).get_logger()
-        self.logging.debug(
-            "Initiate class for opswork environments: %s" % (self.__class__.__name__)
-        )
-        if not settings.ACCESS_KEY or not settings.SECRET_KEY:
-            self.access_key = access_key
-            self.secret_key = secret_key
-        else:
-            self.access_key = settings.ACCESS_KEY
-            self.secret_key = settings.SECRET_KEY
-
-        if self.access_key is None or self.secret_key is None:
-            raise ExpectedAWSKeys(
-                "Please, provide a secret key and acces key aws, see: http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html"
-            )
-
-    @property
-    def conn(self):
-        _conn = opsworks.connect_to_region(
-            aws_access_key_id=self.access_key,
-            aws_secret_access_key=self.secret_key,
-            region_name='us-east-1'
-        )
-        self.logging.debug(
-            "The connection with opsworks was been succesfully"
-        )
-        return _conn
-
-    @property
-    def security_groups(self):
-        _security_groups = ec2.connect_to_region(
-            aws_access_key_id=self.access_key,
-            aws_secret_access_key=self.secret_key,
-            region_name=settings.REGION
-        )
-        self.logging.debug(
-            "The connection with ec2 was been succesfully"
-        )
-        return _security_groups
-    
-    @property
-    def describe_subnets(self):
-        _describe_subnets = vpc.connect_to_region(
-            aws_access_key_id=self.access_key,
-            aws_secret_access_key=self.secret_key,
-            region_name=settings.REGION
-        )
-        self.logging.debug(
-            "The connection with vpc was been succesfully"
-        )
-        return _describe_subnets
-    
+        super(OpsWorkSetup, self).__init__(access_key, secret_key)
 
     def create_stack(self):
         """ create stack for modeling environment """
@@ -81,7 +27,7 @@ class OpsWorkSetup(object):
             or not settings.SERVICE_ROLE_ARN or settings.SERVICE_ROLE_ARN is None):
             raise ExpectedAWSRoles("Please, provide the correct services roles, see http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create.html and check README.md about the access required for this roles.")
 
-        self.stack = self.conn.create_stack(
+        self.stack = self._opsworks_conection.create_stack(
             name=stack_name,
             region=settings.REGION,
             default_availability_zone=settings.AVAILABLE_ZONE,
@@ -120,7 +66,7 @@ class OpsWorkSetup(object):
 
         ** Observation **
             Don't accepet rules with 0.0.0.0/0"""
-        security_groups = self.security_groups.get_all_security_groups()
+        security_groups = self._vpc_connection.get_all_security_groups()
         for sg_attributes in security_groups:
             if u"AWS-OpsWorks-Default-Server" == sg_attributes.name:
                 for new_rule in network_policies:
@@ -186,7 +132,7 @@ class OpsWorkSetup(object):
         network_policies = []
         if not cidr_ips:
             # Get default subnets on defauilt VPC (my case)
-            subnets = self.describe_subnets.get_all_subnets()
+            subnets = self._vpc_connection.get_all_subnets()
             for subnet in subnets:
                 cidr_ips.append(subnet.cidr_block)
             network_policies = [{
@@ -238,7 +184,7 @@ class OpsWorkSetup(object):
 
         self.stack['StackId'] = new_stack_id
 
-        self.layer_created = self.conn.create_layer(
+        self.layer_created = self._opsworks_conection.create_layer(
             stack_id=self.stack['StackId'],
             type='custom',
             name=layer_name,
@@ -289,7 +235,7 @@ class OpsWorkSetup(object):
             else:
                 new_subnets_list = None
 
-            instance_created = self.conn.create_instance(
+            instance_created = self._opsworks_conection.create_instance(
                 stack_id=self.stack['StackId'],
                 layer_ids=new_layer_id,
                 root_device_type='ebs',
@@ -306,7 +252,7 @@ class OpsWorkSetup(object):
                     new_subnets_list
                 )
             )
-            self.conn.start_instance(instance_created['InstanceId'])
+            self._opsworks_conection.start_instance(instance_created['InstanceId'])
 
         if cidr_ips:
             rules=[]
@@ -345,11 +291,11 @@ class OpsWorkSetup(object):
         """
         status = None
         if action == 'stop':
-            status = self.conn.stop_instance(instance_id)
+            status = self._opsworks_conection.stop_instance(instance_id)
         if action == 'start':
-            status = self.conn.start_instance(instance_id)
+            status = self._opsworks_conection.start_instance(instance_id)
         if action == 'delete':
-            status = self.conn.delete_instance(instance_id=instance_id, delete_elastic_ip=True, delete_volumns=True)
+            status = self._opsworks_conection.delete_instance(instance_id=instance_id, delete_elastic_ip=True, delete_volumns=True)
 
         if not status:
             raise UnrecognizedComand("Plase, try again with: 'stop', 'start', or 'delete' command.")
