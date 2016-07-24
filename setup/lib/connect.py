@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from boto import ec2, opsworks, vpc
+from boto import ec2, opsworks, vpc, iam
 
 from utils.utils import Logger
 from etc import settings
@@ -59,6 +59,18 @@ class KeysAWS(object):
             "The connection with ec2 was been succesfully"
         )
         return _ec2_connection
+
+    @property
+    def _iam_connection(self):
+        _iam_connection = iam.connection.IAMConnection(
+            aws_access_key_id=self.access_key,
+            aws_secret_access_key=self.secret_key
+        )
+        self.logging.debug(
+            "The connection with iam was been succesfully"
+        )
+        return _iam_connection
+    
 
     @property
     def _opsworks_conection(self):

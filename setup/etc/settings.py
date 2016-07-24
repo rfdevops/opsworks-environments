@@ -4,6 +4,47 @@ import json
 ACCESS_KEY = ""
 SECRET_KEY = ""
 
+OPSWORKS_EC2_DISCOVERY_POLICY = """
+	{
+	    "Version": "2012-10-17",
+	    "Statement": [
+	        {
+	            "Effect": "Allow",
+	            "Action": [
+	                "ec2:DescribeInstances",
+	                "ec2:DescribeRegions",
+	                "ec2:DescribeTags",
+	                "ec2:DescribeSecurityGroups",
+	                "cloudwatch:PutMetricData"
+	            ],
+	            "Resource": "*"
+	        }
+	    ]
+	}
+"""
+
+OPSWORKS_SERVICES_POLICY = """
+	{
+	    "Statement": [
+	        {
+	            "Action": [
+	                "ec2:*",
+	                "iam:PassRole",
+	                "cloudwatch:GetMetricStatistics",
+	                "cloudwatch:DescribeAlarms",
+	                "elasticloadbalancing:*",
+	                "rds:*"
+	            ],
+	            "Effect": "Allow",
+	            "Resource": [
+	                "*"
+	            ]
+	        }
+	    ]
+	}
+"""
+
+
 CUSTOM_JSON_CHEF = {
 	"java": {
 		"jdk_version": "7",

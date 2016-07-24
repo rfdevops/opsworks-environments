@@ -19,6 +19,9 @@ class OpsWorkSetup(KeysAWS):
 
     def __init__(self, access_key=None, secret_key=None):
         super(OpsWorkSetup, self).__init__(access_key, secret_key)
+        self.logging.debug(
+            "Initiate class for opswork environments: %s" % (self.__class__.__name__)
+        )
 
     def create_stack(self):
         """ create stack for modeling environment """
