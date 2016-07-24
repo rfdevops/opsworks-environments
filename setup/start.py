@@ -11,6 +11,7 @@ from etc import settings
 from utils.utils import Logger, APP_ROOT
 from lib.exceptions import UnknowCIDRRange
 from lib.opswork_setup import OpsWorkSetup
+from lib.iam import AWSPolicies
 
 __author__ = "Rondineli G. de Araujo"
 __copyright__ = "Copyright (C) 2015 Rondineli G. Araujo"
@@ -18,12 +19,8 @@ __copyright__ = "Copyright (C) 2015 Rondineli G. Araujo"
 __version__ = "0.0.1"
 
 
-logging = Logger(
-    "OpsWorks Setup"
-).get_logger()
-logging.debug(
-    "Lunch opsworks setup with elasticSearch Cluster"
-)
+logging = Logger("OpsWorks Setup").get_logger()
+logging.debug("Lunch opsworks setup with elasticSearch Cluster")
 
 
 def call(args, parse):
@@ -39,9 +36,20 @@ def call(args, parse):
     if args.instance_arn_role:
         settings.DEFAULT_INSTANCE_PROFILE_ARN = args.instance_arn_role
 
-    print args
-
     opsworks = OpsWorkSetup()
+    iam = AWSPolicies()
+
+
+    if args.which == "create_policies":
+        result_instance_profile = iam.create_instance_profile()
+        result_service_profile = iam.create_service_profile()
+        if result_service_profile or result_instance_profile:
+            try:
+                settings.DEFAULT_INSTANCE_PROFILE_ARN = result_instance_profile['response_policy']['create_role_response']['create_role_result']['role']['arn']
+                settings.SERVICE_ROLE_ARN = result_service_profile['response_policy']['create_role_response']['create_role_result']['role']['arn']
+            except KeyError:
+                self.logging.error("Problems for create policies on AWS, check your credentials or try create manually")
+
     if args.which == 'setup_environment':
         pattern_ipv4 = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$")
         for arg in args.cidr_ips:
@@ -252,6 +260,8 @@ if __name__ == '__main__':
         required=True,
         help="Ips list for create a security rule, expected a list with cidr_ips, example: -li 172.0.0.2/32 172.0.0.3/32"
     )
+    create_iams_parser = subparsers.add_parser('create-policies', help='Create instances')
+    create_iams_parser.set_defaults(which='create_policies')
 
     args = parser.parse_args()
     call(args, parser)

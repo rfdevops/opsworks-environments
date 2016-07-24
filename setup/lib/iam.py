@@ -19,7 +19,7 @@ class AWSPolicies(KeysAWS):
 			'OpsWorksElasticsearchEC2Discovery{}'.format(str(uuid.uuid4())[:8])
 		)
 		role = self._iam_connection.create_rule(
-			'opsworks-ec2-instance_profile_role-{}'.format(str(uuid.yyud4())[:8])
+			'opsworks-ec2-instance_profile_role-{}'.format(str(uuid.uuid4())[:8])
 		)
 		self._iam_connection.add_role_to_instance_profile(
 			instance_profile['create_instance_profile_response']['create_instance_profile_result']['instance_profile']['instance_profile_name'],
@@ -38,7 +38,7 @@ class AWSPolicies(KeysAWS):
 
 	def create_service_profile(self):
 		role = self._iam_connection.create_rule(
-			'opsworks-ec2-service-role-{}'.format(str(uuid.yyud4())[:8])
+			'opsworks-ec2-service-role-{}'.format(str(uuid.uuid4())[:8])
 		)
 		response_policy = self._iam_connection.put_role_policy(
 			role['create_role_response']['create_role_result']['role']['role_name'],
@@ -50,4 +50,3 @@ class AWSPolicies(KeysAWS):
 			'role': role,
 			'response_policy': response_policy
 		}
-

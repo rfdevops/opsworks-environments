@@ -16,6 +16,8 @@ from exceptions import (
 )
 
 class OpsWorkSetup(KeysAWS):
+    stack = None
+    layer_created = None
 
     def __init__(self, access_key=None, secret_key=None):
         super(OpsWorkSetup, self).__init__(access_key, secret_key)
@@ -50,7 +52,6 @@ class OpsWorkSetup(KeysAWS):
                 stack_name
             )
         )
-        return self.stack
 
     def create_security_group(self, network_policies=[]):
         """ get security groups and modeling template for security groups:
@@ -203,7 +204,6 @@ class OpsWorkSetup(KeysAWS):
             )
         )
         self.vpc_data_network()
-        return self.layer_created
 
     def create_instances(self, number_instances=3, subnets_list=[], new_layer=True, new_stack=True, stack_id=None, layer_id=[], cidr_ips=[], **kwargs):
         """The method is just for create instances:
