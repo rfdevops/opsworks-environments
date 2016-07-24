@@ -8,8 +8,8 @@ from connect import KeysAWS
 
 
 class AWSPolicies(KeysAWS):
-	def __init__(self):
-		super(AWSPolicies, self).__init__()
+	def __init__(self, access_key=None, secret_key=None):
+		super(AWSPolicies, self).__init__(access_key, secret_key)
 		self.logging.debug(
             "Initiate class for opswork environments: %s" % (self.__class__.__name__)
         )
@@ -18,7 +18,7 @@ class AWSPolicies(KeysAWS):
 		instance_profile = self._iam_connection.create_instance_profile(
 			'OpsWorksElasticsearchEC2Discovery{}'.format(str(uuid.uuid4())[:8])
 		)
-		role = self._iam_connection.create_rule(
+		role = self._iam_connection.create_role(
 			'opsworks-ec2-instance_profile_role-{}'.format(str(uuid.uuid4())[:8])
 		)
 		self._iam_connection.add_role_to_instance_profile(
